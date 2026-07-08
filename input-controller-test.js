@@ -1,11 +1,11 @@
 var element = document.getElementById('element'); 
-var speed = 1; 
+var speed = 3; 
 
 var controller = new inputController(
     {
         "left": {
             keys: [37,65],
-    enabled: true
+            enabled: true
         },
         "right": {
             keys: [39,68]
@@ -22,7 +22,14 @@ var controller = new inputController(
         }
     });
 
-controller.attach(document.body); 
+    controller.attach(document.body); 
+
+document.body.addEventListener(controller.ACTION_ACTIVATED, function(e){
+    console.log('activated',e.detail);
+});
+document.body.addEventListener(controller.ACTION_DEACTIVATED, function(e){
+    console.log('deactivated',e.detail);
+});
 
 var elementTop = 50;
 var elementLeft = 50;
@@ -54,7 +61,7 @@ document.getElementById('attach').onclick = function () {
     controller.attach(document.body); 
 };
 
-document.getElementById('dettach').addEventListener('click', function () { 
+document.getElementById('detach').addEventListener('click', function () { 
     controller.detach(); 
 });
 
@@ -73,11 +80,11 @@ document.getElementById('bindjump').onclick = function () {
 
 setInterval(function () { 
     if (controller.isActionActive('jump')) { 
-        element.style.backgroundColor = '#000000'; 
+        element.style.backgroundColor = '#ff0808';
     } else { 
         element.style.backgroundColor = '#3498db'; 
     }
-}, 10); 
+}, 50); 
 
 this.actions[actionName].enabled = true; 
 
