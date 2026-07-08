@@ -1,6 +1,7 @@
 (function (){
 
-  function inputController(actionToBind, target){
+  class inputController{
+    constructor(actionToBind, target){
     this.focused = true;
     this.enabled = true;
     this.target = null;
@@ -16,41 +17,42 @@
       self.updateActions();
     };
   
-    this.onKeyUp = function (e){
+  this.onKeyUp = function (e){
       if (!self.enabled) return;
       if (!self.focused) return;
       delete self.pressed[e.keyCode];
       self.updateActions();
     };
 
-  this.onBlur = function(){
-    self.focused=false;
-    self.pressed={};
-  };
+    this.onBlur = function(){
+      self.focused=false;
+      self.pressed={};
+      self.updateActions();
+    };
 
-  this.onFocus = function (){
-    self.focused = true;
-  };
+    this.onFocus = function (){
+      self.focused = true;
+    };
 
-  this.ACTION_ACTIVATED = "input-controller:action-activated";
-  this.ACTION_DEACTIVATED = "input-controller:action-deactivated";
+    this.ACTION_ACTIVATED = "input-controller:action-activated";
+    this.ACTION_DEACTIVATED = "input-controller:action-deactivated";
   
-  if (actionToBind){
-    this.bindAction(actionToBind);
+    if (actionToBind){
+      this.bindAction(actionToBind);
+    }
+    if (target){
+      this.attach(target);
+    }
   }
-  if (target){
-    this.attach(target);
-  }
-}
 
-inputController.prototype.isKeyPressed = function(keyCode){
-  if (this.pressed[keyCode]){
-    return true;
+  isKeyPressed(keyCode){
+    if (this.pressed[keyCode]){
+      return true;
+    }
+    return false;
   }
-  return false;
-};
 
-inputController.prototype.updateActions = function(){
+  updateActions(){
     for (var name in this.action){
       var action = this.action[name]
       if(!action.enabled){
@@ -63,11 +65,19 @@ inputController.prototype.updateActions = function(){
           active = true;
         }
       }
-      action.active = active;
+      if (active.action !==active){
+        action.active=active;
+        if (this.enabled && this.focused && this.target){
+          var type = active?this.ACTION_ACTIVATED:this.ACTION_DEACTIVATED;
+          this.target.dispatchEvent(new CustomEvent(type,{detail:name}));
+        }
+      } else {
+        action.active=active;
+      }
     }
-};
+  }
 
-inputController.prototype.bindAction = function (actionsToBind){
+  bindAction(actionsToBind){
     for (var name in actionsToBind){
       var item = actionsToBind[name];
       this.action[name] = {
@@ -79,17 +89,18 @@ inputController.prototype.bindAction = function (actionsToBind){
         this.action[name].enabled = false;
       }
     }
-  };
+  }
   
-  inputController.prototype.attach = function(target){
+  attach(target){
     this.target = target;
     target.addEventListener('keydown', this.onKeyDown);
     target.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('focus', this.onFocus);
+    window.addEventListener('blur',this.onBlur);
     this.enabled = true;
-  };
+  }
 
-  inputController.prototype.isActionActive = function(action){
+  isActionActive(action){
     if (!this.action[action]){
       return false;
     }
@@ -97,33 +108,35 @@ inputController.prototype.bindAction = function (actionsToBind){
       return false;
     }
     return this.action[action].active;
-  };
+  }
 
-  inputController.prototype.enableAction = function(actionName){
+  enableAction(actionName){
     if (this.action[actionName]){
       this.action[actionName].enabled = true;
     }
-  };
+  }
 
-  inputController.prototype.disableAction = function(actionName){
+  disableAction(actionName){
     if (this.action[actionName]){
       this.action[actionName].enabled = false;
       this.action[actionName].active = false;
     }
-  };
+  }
 
-  inputController.prototype.detach = function(){
+  detach(){
     if (!this.target){
       return;
     }
     this.target.removeEventListener('keydown', this.onKeyDown);
     this.target.removeEventListener('keyup',this.onKeyUp);
     window.removeEventListener('focus',this.onFocus);
+    window.removeEventListener('blur',this.onBlur);
     this.pressed = {};
     this.target = null;
     this.enabled = false;
-  };
+  }
+}
 
-window.inputController = inputController;
+  window.inputController = inputController;
 
 })();
