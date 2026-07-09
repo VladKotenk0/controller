@@ -8,31 +8,10 @@
     this.action = {};
     this.pressed = {};
 
-    var self = this;
-
-    this.onKeyDown = function (e){
-      if (!self.enabled) return;
-      if (!self.focused) return;
-      self.pressed[e.keyCode] = true;
-      self.updateActions();
-    };
-  
-  this.onKeyUp = function (e){
-      if (!self.enabled) return;
-      if (!self.focused) return;
-      delete self.pressed[e.keyCode];
-      self.updateActions();
-    };
-
-    this.onBlur = function(){
-      self.focused=false;
-      self.pressed={};
-      self.updateActions();
-    };
-
-    this.onFocus = function (){
-      self.focused = true;
-    };
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
+    this.onBlur = this.onBlur.bind(this);
+    this.onFocus = this.onFocus.bind(this);
 
     this.ACTION_ACTIVATED = "input-controller:action-activated";
     this.ACTION_DEACTIVATED = "input-controller:action-deactivated";
@@ -44,6 +23,30 @@
       this.attach(target);
     }
   }
+
+    onKeyDown(e){
+      if (!this.enabled) return;
+      if (!this.focused) return;
+      this.pressed[e.keyCode] = true;
+      this.updateActions();
+    }
+  
+    onKeyUp(e){
+      if (!this.enabled) return;
+      if (!this.focused) return;
+      delete this.pressed[e.keyCode];
+      this.updateActions();
+    };
+
+    onBlur(){
+      this.focused=false;
+      this.pressed={};
+      this.updateActions();
+    };
+
+    onFocus(){
+      this.focused = true;
+    }
 
   isKeyPressed(keyCode){
     if (this.pressed[keyCode]){
@@ -65,7 +68,7 @@
           active = true;
         }
       }
-      if (active.action !==active){
+      if (action.active !==active){
         action.active=active;
         if (this.enabled && this.focused && this.target){
           var type = active?this.ACTION_ACTIVATED:this.ACTION_DEACTIVATED;
