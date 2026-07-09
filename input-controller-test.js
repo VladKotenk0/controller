@@ -18,18 +18,24 @@ var controller = new inputController(
         },
         "jump":{
             keys: [32],
-        enabled: false
+            enabled: false
+        },
+        "click":{
+            buttons: [0],
         }
     });
 
-    controller.attach(document.body); 
-
-document.body.addEventListener(controller.ACTION_ACTIVATED, function(e){
-    console.log('activated',e.detail);
-});
-document.body.addEventListener(controller.ACTION_DEACTIVATED, function(e){
-    console.log('deactivated',e.detail);
-});
+    controller.registerPlugin(keyboardplugin);
+    controller.registerPlugin(mouseplugin);
+    
+    controller.attach(document.body);
+    
+    document.body.addEventListener(controller.ACTION_ACTIVATED, function(e){
+        console.log('activated',e.detail);
+    });
+    document.body.addEventListener(controller.ACTION_DEACTIVATED, function(e){
+        console.log('deactivated',e.detail);
+    });
 
 var elementTop = 50;
 var elementLeft = 50;
@@ -81,36 +87,9 @@ document.getElementById('bindjump').onclick = function () {
 setInterval(function () { 
     if (controller.isActionActive('jump')) { 
         element.style.backgroundColor = '#ff0808';
+    } else if (controller.isActionActive('click')){
+        element.style.backgroundColor = '#e6ff01'
     } else { 
         element.style.backgroundColor = '#3498db'; 
     }
-}, 50); 
-
-this.actions[actionName].enabled = true; 
-
-inputController.prototype.disableAction = function (actionName) { 
-    if (this.actions[actionName]) { 
-        this.actions[actionName].enabled = false; 
-        this.actions[actionName].active = false; 
-    }
-};
-
-inputController.prototype.updateActions = function () { 
-    for (var name in this.actions) { 
-        var action = this.actions[name]; 
-
-        if (!action.enabled) { 
-            continue; 
-        }
-
-        var active = false; 
-
-        for (var i = 0; i < action.keys.length; i++) { 
-            if (this.pressed[action.keys[i]]) { 
-                active = true; 
-            }
-        }
-
-        action.active = active;
-    }
-};
+}, 50);
