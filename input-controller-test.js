@@ -25,8 +25,8 @@ var controller = new inputController(
         }
     });
 
-    controller.registerPlugin(keyboardplugin);
-    controller.registerPlugin(mouseplugin);
+    controller.registerPlugin(new keyboardplugin());
+    controller.registerPlugin(new mouseplugin());
     
     controller.attach(document.body);
     
