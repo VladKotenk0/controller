@@ -6,13 +6,8 @@
     this.enabled = true;
     this.target = null;
     this.action = {};
-    this.pressed = {};
-
-    this.onKeyDown = this.onKeyDown.bind(this);
-    this.onKeyUp = this.onKeyUp.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-    this.onFocus = this.onFocus.bind(this);
-
+    this.plugins = [];
+    
     this.ACTION_ACTIVATED = "input-controller:action-activated";
     this.ACTION_DEACTIVATED = "input-controller:action-deactivated";
   
@@ -23,49 +18,26 @@
       this.attach(target);
     }
   }
-
-    onKeyDown(e){
-      if (!this.enabled) return;
-      if (!this.focused) return;
-      this.pressed[e.keyCode] = true;
-      this.updateActions();
-    }
   
-    onKeyUp(e){
-      if (!this.enabled) return;
-      if (!this.focused) return;
-      delete this.pressed[e.keyCode];
-      this.updateActions();
-    };
-
-    onBlur(){
-      this.focused=false;
-      this.pressed={};
-      this.updateActions();
-    };
-
-    onFocus(){
-      this.focused = true;
+  registerPlugin(plugin){
+    this.plugins.push(plugin);
+    if (this.target){
+      plugin.attach(this, this.target);
     }
-
-  isKeyPressed(keyCode){
-    if (this.pressed[keyCode]){
-      return true;
-    }
-    return false;
   }
-
+  
   updateActions(){
     for (var name in this.action){
       var action = this.action[name]
       if(!action.enabled){
-        continue
+        continue;
       }
 
       var active = false;
-      for (var i = 0; i < action.keys.length; i++){
-        if (this.pressed[action.keys[i]]){
+      for (var i = 0; i < this.plugins.length; i++){
+        if (this.plugins[i].isActionActive(name,action)){
           active = true;
+          break;
         }
       }
       if (action.active !==active){
@@ -86,7 +58,8 @@
       this.action[name] = {
         keys: item.keys,
         enabled: true,
-        active: false
+        active: false,
+        buttons: item.buttons
       };
       if (item.enabled === false){
         this.action[name].enabled = false;
@@ -96,10 +69,9 @@
   
   attach(target){
     this.target = target;
-    target.addEventListener('keydown', this.onKeyDown);
-    target.addEventListener('keyup', this.onKeyUp);
-    window.addEventListener('focus', this.onFocus);
-    window.addEventListener('blur',this.onBlur);
+    for (var i = 0; i<this.plugins.length;i++){
+      this.plugins[i].attach(this, this.target);
+    }
     this.enabled = true;
   }
 
@@ -130,11 +102,9 @@
     if (!this.target){
       return;
     }
-    this.target.removeEventListener('keydown', this.onKeyDown);
-    this.target.removeEventListener('keyup',this.onKeyUp);
-    window.removeEventListener('focus',this.onFocus);
-    window.removeEventListener('blur',this.onBlur);
-    this.pressed = {};
+    for (var i = 0; i<this.plugins.length; i++){
+      this.plugins[i].detach();
+    }
     this.target = null;
     this.enabled = false;
   }
