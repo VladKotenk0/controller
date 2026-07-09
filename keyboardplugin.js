@@ -1,16 +1,17 @@
 (function (){
 
-    var keyboardplugin = {
-        name:"keyboard",
-        controller: null,
-        target: null,
-        pressed:{},
-        
-        attach(controller,target){
+    class keyboardplugin {
+        constructor(){
+            this.context = null;
+            this.target = null;
+            this.pressed = {};
+        }
+
+        attach(target, context){
             if (this.target){
                 this.detach();
             }
-            this.controller = controller;
+            this.context = context;
             this.target = target;
 
             this.onKeyDown = this.onKeyDown.bind(this);
@@ -21,45 +22,46 @@
             target.addEventListener('keydown', this.onKeyDown);
             target.addEventListener('keyup', this.onKeyUp);
             window.addEventListener('focus', this.onFocus);
-            window.addEventListener('blur',this.onBlur);
-        },        
+            window.addEventListener('blur', this.onBlur);
+        }
 
         detach(){
             if (!this.target){
-            return;
+                return;
             }
             this.target.removeEventListener('keydown', this.onKeyDown);
-            this.target.removeEventListener('keyup',this.onKeyUp);
-            window.removeEventListener('focus',this.onFocus);
-            window.removeEventListener('blur',this.onBlur);
+            this.target.removeEventListener('keyup', this.onKeyUp);
+            window.removeEventListener('focus', this.onFocus);
+            window.removeEventListener('blur', this.onBlur);
             this.pressed = {};
             this.target = null;
-            this.controller = null;
-        },
+            this.context = null;
+        }
 
         onKeyDown(e){
-            if (!this.controller.enabled) return;
-            if (!this.controller.focused) return;
+            if (!this.context.isEnabled()) return;
+            if (!this.context.isFocused()) return;
             this.pressed[e.keyCode] = true;
-            this.controller.updateActions();
-        },
-    
+            this.context.requestUpdate();
+        }
+
         onKeyUp(e){
-            if (!this.controller.enabled) return;
-            if (!this.controller.focused) return;
+            if (!this.context.isEnabled()) return;
+            if (!this.context.isFocused()) return;
             delete this.pressed[e.keyCode];
-            this.controller.updateActions();
-        },
-        
+            this.context.requestUpdate();
+        }
+
         onBlur(){
-            this.controller.focused=false;
-            this.pressed={};
-            this.controller.updateActions();
-        },
-        
+            this.context.setFocused(false);
+            this.pressed = {};
+            this.context.requestUpdate();
+        }
+
         onFocus(){
-            this.controller.focused = true;
-        },
+            this.context.setFocused(true);
+        }
+
         isActionActive(name, action){
             if (!action.keys){
                 return false;
@@ -71,8 +73,8 @@
             }
             return false;
         }
-    };
-    
+    }
+
     window.keyboardplugin = keyboardplugin;
 
 })();
