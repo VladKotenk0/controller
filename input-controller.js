@@ -18,11 +18,29 @@
       this.attach(target);
     }
   }
+
+  getPluginContext(){
+    var self = this;
+    return {
+      isEnabled(){
+        return self.enabled;
+      },
+      isFocused(){
+        return self.focused;
+      },
+      setFocused(value){
+        self.focused = value;
+      },
+      requestUpdate(){
+        self.updateActions();
+      }
+    };
+  }
   
   registerPlugin(plugin){
     this.plugins.push(plugin);
     if (this.target){
-      plugin.attach(this, this.target);
+      plugin.attach(this.target, this.getPluginContext());
     }
   }
   
@@ -69,8 +87,9 @@
   
   attach(target){
     this.target = target;
+    var context = this.getPluginContext();
     for (var i = 0; i<this.plugins.length;i++){
-      this.plugins[i].attach(this, this.target);
+      this.plugins[i].attach(target, context);
     }
     this.enabled = true;
   }
